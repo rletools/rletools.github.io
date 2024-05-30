@@ -1,0 +1,169 @@
+---
+permalink: /series-predictor/
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RLCS Series Predictor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #121212;
+        color: #e0e0e0;
+      }
+
+      main {
+        max-width: 600px;
+        width: 100%;
+        padding: 20px;
+        background-color: #1e1e1e;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        margin-top: 20px;
+      }
+
+      header {
+        text-align: center;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      label {
+        font-weight: bold;
+      }
+
+      input[type='number'],
+      input[type='submit'] {
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #555;
+        background-color: #333;
+        color: #e0e0e0;
+      }
+
+      input[type='number'] {
+        background-color: #2b2b2b;
+      }
+
+      input[type='submit'] {
+        cursor: pointer;
+        background-color: #4caf50;
+        border: none;
+        color: #fff;
+        transition: background-color 0.3s ease;
+      }
+
+      input[type='submit']:hover {
+        background-color: #45a049;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      #output {
+        margin-top: 20px;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="wrapper">
+      <header>
+        <h1>RLCS Series Predictor</h1>
+      </header>
+      <section id="form-wrapper">
+        <form id="form" autocomplete="off">
+          <label for="team-one-rating">Team One Rating:</label>
+          <input required type="number" name="team-one-rating" id="team-one-rating" step="1" min="0" />
+
+          <label for="team-two-rating">Team Two Rating:</label>
+          <input required type="number" name="team-two-rating" id="team-two-rating" step="1" min="0" />
+
+          <label for="series-length">Series Length:</label>
+          <input required type="number" name="series-length" id="series-length" step="2" min="3" max="7" />
+
+          <input type="submit" value="Calculate" />
+        </form>
+      </section>
+      <section id="output"></section>
+      <footer>
+        <p>
+          <small>Made by ted1ra</small>
+        </p>
+      </footer>
+    </main>
+    <script>
+      const form = document.getElementById('form');
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        onSubmit();
+      });
+
+      form.addEventListener('input', () => {
+        document.getElementById('output').textContent = '';
+      });
+
+      function onSubmit() {
+        const teamOneRating = parseInt(document.getElementById('team-one-rating').value, 10);
+        const teamTwoRating = parseInt(document.getElementById('team-two-rating').value, 10);
+        const seriesLength = parseInt(document.getElementById('series-length').value, 10);
+
+        const output = document.getElementById('output');
+
+        if (isNaN(teamOneRating) || isNaN(teamTwoRating) || isNaN(seriesLength)) {
+          output.textContent = 'Please enter valid numbers for all fields.';
+          return;
+        }
+
+        const gameWinProbability = getGameWinProbability(teamOneRating, teamTwoRating);
+        const seriesWinProbability = getSeriesWinProbability(gameWinProbability, seriesLength);
+
+        output.textContent = `Team one has a(n) ${(seriesWinProbability * 100).toFixed(2)}% chance to beat team two.`;
+      }
+
+      function getGameWinProbability(teamOneRating, teamTwoRating) {
+        const gameWinProbability = 1 / (1 + Math.pow(10, (teamTwoRating - teamOneRating) / (7000 / 9)));
+        return gameWinProbability;
+      }
+
+      function getSeriesWinProbability(gameWinProbability, seriesLength) {
+        const gameLoseProbability = 1 - gameWinProbability;
+        let seriesWinProbability = 0;
+
+        switch (seriesLength) {
+          case 3:
+            seriesWinProbability = Math.pow(gameWinProbability, 2) * (2 * gameLoseProbability + 1);
+            break;
+
+          case 5:
+            seriesWinProbability = Math.pow(gameWinProbability, 3) * (6 * Math.pow(gameLoseProbability, 2) + 3 * gameLoseProbability + 1);
+            break;
+
+          case 7:
+            seriesWinProbability = Math.pow(gameWinProbability, 4) * (20 * Math.pow(gameLoseProbability, 3) + 10 * Math.pow(gameLoseProbability, 2) + 4 * gameLoseProbability + 1);
+            break;
+
+          default:
+            seriesWinProbability = 0;
+            break;
+        }
+
+        return seriesWinProbability;
+      }
+    </script>
+  </body>
+</html>
